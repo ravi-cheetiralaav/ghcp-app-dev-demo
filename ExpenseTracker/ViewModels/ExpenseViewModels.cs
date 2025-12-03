@@ -65,6 +65,9 @@ public class ReportFilterViewModel
     [Display(Name = "Use Financial Year (July-June)")]
     public bool UseFinancialYear { get; set; } = true;
 
+    [Display(Name = "Show amounts in AUD")]
+    public bool ShowAudConversion { get; set; } = false;
+
     [Display(Name = "From Date")]
     [DataType(DataType.Date)]
     public DateTime? FromDate { get; set; }

@@ -66,8 +66,16 @@ namespace ExpenseTracker.Controllers
                     case ReportType.Monthly:
                         if (filter.Month.HasValue)
                         {
-                            viewModel.MonthlyReport = await _reportingService.GetMonthlyReportAsync(
-                                user.Id, filter.Year, filter.Month.Value);
+                            if (filter.ShowAudConversion)
+                            {
+                                viewModel.MonthlyReport = await _reportingService.GetMonthlyReportWithAudAsync(
+                                    user.Id, filter.Year, filter.Month.Value);
+                            }
+                            else
+                            {
+                                viewModel.MonthlyReport = await _reportingService.GetMonthlyReportAsync(
+                                    user.Id, filter.Year, filter.Month.Value);
+                            }
                             
                             var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(filter.Month.Value);
                             viewModel.ReportTitle = $"Monthly Report - {monthName} {filter.Year}";
@@ -76,8 +84,16 @@ namespace ExpenseTracker.Controllers
                         break;
 
                     case ReportType.Annual:
-                        viewModel.AnnualReport = await _reportingService.GetAnnualReportAsync(
-                            user.Id, filter.Year, filter.UseFinancialYear);
+                        if (filter.ShowAudConversion)
+                        {
+                            viewModel.AnnualReport = await _reportingService.GetAnnualReportWithAudAsync(
+                                user.Id, filter.Year, filter.UseFinancialYear);
+                        }
+                        else
+                        {
+                            viewModel.AnnualReport = await _reportingService.GetAnnualReportAsync(
+                                user.Id, filter.Year, filter.UseFinancialYear);
+                        }
                         
                         if (filter.UseFinancialYear)
                         {
@@ -94,8 +110,16 @@ namespace ExpenseTracker.Controllers
                     case ReportType.Custom:
                         if (filter.FromDate.HasValue && filter.ToDate.HasValue)
                         {
-                            viewModel.CustomReport = await _reportingService.GetCustomReportAsync(
-                                user.Id, filter.FromDate.Value, filter.ToDate.Value);
+                            if (filter.ShowAudConversion)
+                            {
+                                viewModel.CustomReport = await _reportingService.GetCustomReportWithAudAsync(
+                                    user.Id, filter.FromDate.Value, filter.ToDate.Value);
+                            }
+                            else
+                            {
+                                viewModel.CustomReport = await _reportingService.GetCustomReportAsync(
+                                    user.Id, filter.FromDate.Value, filter.ToDate.Value);
+                            }
                             
                             viewModel.ReportTitle = "Custom Period Report";
                             viewModel.DateRange = $"{filter.FromDate.Value:dd MMM yyyy} - {filter.ToDate.Value:dd MMM yyyy}";

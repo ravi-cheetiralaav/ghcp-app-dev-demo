@@ -9,7 +9,15 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="card-title">Total Amount</h6>
-                                <h4>@Model.TotalAmount.ToString("C")</h4>
+                                @if (Model.ShowAudConversion && Model.AudConversionData != null)
+                                {
+                                    <h4>AUD $@($"{Model.AudConversionData.TotalAudAmount:N2}")</h4>
+                                    <small class="opacity-75">@Model.TotalAmount.ToString("C")</small>
+                                }
+                                else
+                                {
+                                    <h4>@Model.TotalAmount.ToString("C")</h4>
+                                }
                             </div>
                             <div class="align-self-center">
                                 <i class="fas fa-dollar-sign fa-2x"></i>
@@ -74,6 +82,50 @@
                 </div>
             </div>
         </div>
+
+        @if (Model.ShowAudConversion && Model.AudConversionData?.CurrencyBreakdown?.Any() == true)
+        {
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Currency Conversion Summary
+                        @if (Model.AudConversionData.LastUpdated.HasValue)
+                        {
+                            <small class="text-muted ms-2">
+                                <i class="fas fa-clock"></i> Updated: @Model.AudConversionData.LastUpdated.Value.ToString("MMM dd, HH:mm")
+                            </small>
+                        }
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var currency in Model.AudConversionData.CurrencyBreakdown)
+                        {
+                            var exchangeRate = Model.AudConversionData.ExchangeRates.ContainsKey(currency.Key) 
+                                ? Model.AudConversionData.ExchangeRates[currency.Key] 
+                                : 1.0m;
+                            var audAmount = currency.Value * exchangeRate;
+                            
+                            <div class="col-md-6 col-lg-3 mb-2">
+                                <div class="d-flex justify-content-between align-items-center border rounded p-2">
+                                    <div>
+                                        <strong>@currency.Key</strong><br>
+                                        <span class="text-muted">$@($"{currency.Value:N2}")</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <i class="fas fa-arrow-right text-primary mx-2"></i>
+                                        <div>
+                                            <span class="fw-bold text-success">AUD $@($"{audAmount:N2}")</span><br>
+                                            <small class="text-muted">Rate: @($"{exchangeRate:F4}")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
 
         @if (Model.DailyBreakdown.Any())
         {

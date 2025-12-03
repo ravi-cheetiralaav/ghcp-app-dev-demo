@@ -115,6 +115,12 @@ The AI assistant successfully generates:
 3. **Recurring Expenses** - Show recurring expense setup and management
 4. **Responsive Design** - Test the application on different screen sizes
 
+### Phase 4: Enhanced Reporting Features
+1. **Australian Tax Compliance** - Generate reports with Australian Financial Year support
+2. **Tax Deductible Filtering** - Show reports that only include tax-deductible expenses
+3. **Recurring Expense Calculations** - Demonstrate proper annualization of recurring expenses
+4. **Multi-format Exports** - Export reports to CSV for tax filing purposes
+
 1. **Project Structure Tour**
    ```
    ExpenseTracker/
@@ -143,6 +149,102 @@ The AI assistant successfully generates:
    - RESTful API structure with proper error handling
    - Cloud-ready architecture with configuration management
    - Comprehensive form validation and user feedback
+   - **Advanced Reporting System** with Australian Financial Year support
+   - **Tax-focused Reports** for business expense deductions
+   - **Recurring Expense Analytics** with proper frequency calculations
+   - **Interactive Charts** and visual expense breakdowns
+   - **CSV Export** functionality for tax filing and record keeping
+
+## 📊 Step 4: Implementing Advanced Reporting Features
+
+### AI-Assisted Reporting Implementation
+
+Use this prompt to add comprehensive reporting functionality:
+
+```
+Implement the Report functionality, which should include option to filter by Financial Year in Australia to use it for taxation
+```
+
+This prompt generates a complete reporting system with:
+
+### 🎯 Generated Reporting Components
+
+1. **ReportController** (`Controllers/ReportController.cs`)
+   - Handles all report generation and filtering
+   - Supports Monthly, Annual, and Custom period reports
+   - Australian Financial Year calculations (July 1 - June 30)
+   - CSV export functionality for tax filing
+   - Proper error handling and user feedback
+
+2. **Enhanced ViewModels** (`ViewModels/ExpenseViewModels.cs`)
+   - `ReportFilterViewModel` - User input filtering with dynamic controls
+   - `ReportViewModel` - Display data binding for all report types
+   - Support for Australian Financial Year toggle
+   - Date range validation and year selection
+
+3. **Interactive Report Views**
+   - **Main Report Interface** (`Views/Report/Index.cshtml`) - Dynamic filtering form
+   - **Monthly Report** (`Views/Report/_MonthlyReportPartial.cshtml`) - Month-specific analysis
+   - **Annual Report** (`Views/Report/_AnnualReportPartial.cshtml`) - Year/Financial year analysis
+   - **Custom Report** (`Views/Report/_CustomReportPartial.cshtml`) - User-defined periods
+
+4. **Enhanced ReportingService** (`Services/ReportingService.cs`)
+   - **Tax-focused calculations** - Only includes tax deductible expenses in totals
+   - **Proper recurring expense handling** - Annualizes based on frequency (e.g., $50/month = $600/year)
+   - **Australian Financial Year logic** - July-June period calculations
+   - **Multi-currency support** with proper currency breakdowns
+
+### 🔧 Key Technical Features
+
+**Australian Tax Compliance:**
+- Financial Year runs from July 1 to June 30
+- Clear FY labeling (e.g., "FY2024/2025")
+- Tax deductible vs non-deductible summaries
+- Professional disclaimer for tax advice
+
+**Smart Recurring Calculations:**
+```csharp
+// Before: $50 monthly expense showed as $50 in annual report
+// After: $50 monthly expense shows as $600 in annual report ($50 × 12 months)
+
+GetFrequencyMultiplier(frequency) switch:
+- Weekly: 52 weeks ÷ 12 = ~4.33x per month
+- Fortnightly: 26 ÷ 12 = ~2.17x per month  
+- Monthly: 1x per month
+- Quarterly: 1 ÷ 3 = ~0.33x per month
+- Annually: 1 ÷ 12 = ~0.083x per month
+```
+
+**Interactive Data Visualization:**
+- Chart.js integration for visual analytics
+- Category breakdown pie charts
+- Monthly/daily trend line charts
+- Responsive dashboard cards with statistics
+- Hover tooltips and professional styling
+
+**Export Capabilities:**
+- One-click CSV download for tax records
+- Properly formatted data for accounting software
+- File naming with periods (e.g., "Financial_Year_Report_FY2024_2025.csv")
+
+### 🎯 Bug Fix Documentation
+
+**Critical Issue Resolved:**
+The AI-generated reporting had calculation bugs that were identified and fixed:
+
+**Problem:**
+- Total amounts included ALL expenses (not just tax deductible)
+- Recurring expenses showed raw amounts instead of annualized values
+
+**Solution Applied:**
+```
+I have identified a bug in the report, the report total expense should consider only tax dedutable and also need to take consideration of reoccurance expenses, say if the per month expense is 50$ it shoud transalate into 12*50=600$
+```
+
+**Result:**
+- Reports now only include tax deductible expenses in totals
+- Recurring expenses properly annualized (e.g., $50/month = $600/year for annual reports)
+- Accurate Australian tax year calculations for business expense reporting
 
 
 
@@ -246,7 +348,14 @@ The application automatically creates a test user during initialization:
    - Category-based organization
    - Multi-currency support validation
 
-4. **Responsive Design Verification**
+4. **Australian Tax Reporting Validation**
+   - Generate Financial Year reports (July-June periods)
+   - Verify tax deductible expense calculations
+   - Test recurring expense annualization
+   - Export reports to CSV format
+   - Validate monthly vs annual recurring calculations
+
+5. **Responsive Design Verification**
    - Mobile device compatibility
    - Tablet layout optimization
    - Desktop full-feature experience
@@ -287,5 +396,12 @@ dotnet run
 
 # 5. Access the application
 # Open browser to: http://localhost:5171
+
+# 6. Demo the key features
+# - Login with: test@example.com / Test123!
+# - Navigate to "Expenses" to see sample data
+# - Click "Add Expense" to create new expenses
+# - Navigate to "Reports" for Australian tax reporting
+# - Generate Financial Year reports for tax compliance
 ```
 

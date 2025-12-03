@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using ExpenseTracker.Models;
+using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -46,10 +47,72 @@ namespace ExpenseTracker.ViewModels
         // Navigation properties for display
         public Category? Category { get; set; }
         public string CategoryName => Category?.Name ?? "Uncategorized";
-        public string CurrencySymbol => CurrencyHelper.GetSymbol(Currency);
-    }
+    public string CurrencySymbol => CurrencyHelper.GetSymbol(Currency);
+}
 
-    public class ExpenseSearchViewModel
+// Report ViewModels
+public class ReportFilterViewModel
+{
+    [Display(Name = "Report Type")]
+    public ReportType ReportType { get; set; } = ReportType.Annual;
+
+    [Display(Name = "Year")]
+    public int Year { get; set; } = DateTime.Now.Year;
+
+    [Display(Name = "Month")]
+    public int? Month { get; set; }
+
+    [Display(Name = "Use Financial Year (July-June)")]
+    public bool UseFinancialYear { get; set; } = true;
+
+    [Display(Name = "From Date")]
+    [DataType(DataType.Date)]
+    public DateTime? FromDate { get; set; }
+
+    [Display(Name = "To Date")]
+    [DataType(DataType.Date)]
+    public DateTime? ToDate { get; set; }
+
+    public List<int> AvailableYears { get; set; } = new();
+    public List<MonthOption> AvailableMonths { get; set; } = new()
+    {
+        new() { Value = 1, Name = "January" },
+        new() { Value = 2, Name = "February" },
+        new() { Value = 3, Name = "March" },
+        new() { Value = 4, Name = "April" },
+        new() { Value = 5, Name = "May" },
+        new() { Value = 6, Name = "June" },
+        new() { Value = 7, Name = "July" },
+        new() { Value = 8, Name = "August" },
+        new() { Value = 9, Name = "September" },
+        new() { Value = 10, Name = "October" },
+        new() { Value = 11, Name = "November" },
+        new() { Value = 12, Name = "December" }
+    };
+}
+
+public class MonthOption
+{
+    public int Value { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+public class ReportViewModel
+{
+    public ReportFilterViewModel Filter { get; set; } = new();
+    public MonthlyReportData? MonthlyReport { get; set; }
+    public AnnualReportData? AnnualReport { get; set; }
+    public CustomReportData? CustomReport { get; set; }
+    public string ReportTitle { get; set; } = string.Empty;
+    public string DateRange { get; set; } = string.Empty;
+}
+
+public enum ReportType
+{
+    Monthly,
+    Annual,
+    Custom
+}    public class ExpenseSearchViewModel
     {
         [Display(Name = "Search")]
         public string? SearchTerm { get; set; }

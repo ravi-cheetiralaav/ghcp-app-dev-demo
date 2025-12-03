@@ -49,13 +49,13 @@ namespace ExpenseTracker.Services
                     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                 });
 
-                if (apiResponse?.Result == "success" && apiResponse.ConversionRates != null)
+                if (apiResponse?.Result == "success" && apiResponse.ConversionFactors != null)
                 {
                     var exchangeData = new ExchangeRateData
                     {
                         BaseCurrency = baseCurrency,
                         LastUpdated = DateTime.UtcNow,
-                        ConversionRates = apiResponse.ConversionRates,
+                        ConversionRates = apiResponse.ConversionFactors,
                         IsSuccess = true
                     };
 
@@ -209,6 +209,6 @@ namespace ExpenseTracker.Services
         public long? TimeNextUpdateUnix { get; set; }
         public string? TimeNextUpdateUtc { get; set; }
         public string? BaseCode { get; set; }
-        public Dictionary<string, decimal>? ConversionRates { get; set; }
+        public Dictionary<string, decimal>? ConversionFactors { get; set; }
     }
 }

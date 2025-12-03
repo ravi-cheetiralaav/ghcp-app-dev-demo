@@ -1,0 +1,235 @@
+@model ExpenseTracker.ViewModels.ExpenseSearchViewModel
+@{
+    ViewData["Title"] = "My Expenses";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-list me-2"></i>My Expenses</h2>
+        <p class="text-muted">Track and manage your expense records.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add New Expense
+    </a>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-search me-2"></i>Search & Filter</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="Index" method="get">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="SearchTerm" class="form-label"></label>
+                    <input asp-for="SearchTerm" class="form-control" placeholder="Search descriptions..." />
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label asp-for="CategoryId" class="form-label"></label>
+                    <select asp-for="CategoryId" class="form-select" asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Currency" class="form-label"></label>
+                    <select asp-for="Currency" class="form-select">
+                        <option value="">All Currencies</option>
+                        @foreach (var currency in Model.Currencies)
+                        {
+                            <option value="@currency" selected="@(Model.Currency == currency)">@currency</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label asp-for="FromDate" class="form-label"></label>
+                    <input asp-for="FromDate" class="form-control" type="date" />
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <label asp-for="ToDate" class="form-label"></label>
+                    <input asp-for="ToDate" class="form-control" type="date" />
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="form-check mt-4 pt-2">
+                        <input name="IsTaxDeductible" class="form-check-input" type="checkbox" value="true" @(Model.IsTaxDeductible == true ? "checked" : "") />
+                        <input name="IsTaxDeductible" type="hidden" value="false" />
+                        <label for="IsTaxDeductible" class="form-check-label">
+                            Tax Deductible Only
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="mt-4 pt-2">
+                        <button type="submit" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Clear
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Expenses List -->
+@if (Model.Expenses.Any())
+{
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Expense Records</h5>
+            <span class="badge bg-primary">@Model.TotalRecords Total</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Currency</th>
+                            <th>Tax Deductible</th>
+                            <th>Recurring</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var expense in Model.Expenses)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="text-muted">
+                                        @expense.ExpenseDate.ToString("MMM dd, yyyy")
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>@expense.Description</strong>
+                                </td>
+                                <td>
+                                    @if (expense.Category != null)
+                                    {
+                                        <span class="badge @expense.Category.ColorClass">
+                                            <i class="@expense.Category.IconClass me-1"></i>@expense.Category.Name
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-question me-1"></i>Uncategorized
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong class="text-success">@expense.Amount.ToString("C")</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@expense.Currency</span>
+                                </td>
+                                <td>
+                                    @if (expense.IsTaxDeductible)
+                                    {
+                                        <i class="fas fa-check text-success" title="Tax Deductible"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-times text-muted" title="Not Tax Deductible"></i>
+                                    }
+                                </td>
+                                <td>
+                                    @if (expense.IsRecurring)
+                                    {
+                                        <i class="fas fa-redo text-warning" title="Recurring: @expense.RecurringFrequency"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-times text-muted" title="One-time"></i>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@expense.Id" class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@expense.Id" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@expense.Id" class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Expenses pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                @if (Model.Page > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-searchTerm="@Model.SearchTerm" asp-route-categoryId="@Model.CategoryId" asp-route-currency="@Model.Currency" asp-route-isTaxDeductible="@Model.IsTaxDeductible" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                }
+                
+                @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-searchTerm="@Model.SearchTerm" asp-route-categoryId="@Model.CategoryId" asp-route-currency="@Model.Currency" asp-route-isTaxDeductible="@Model.IsTaxDeductible" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")">
+                            @i
+                        </a>
+                    </li>
+                }
+                
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-searchTerm="@Model.SearchTerm" asp-route-categoryId="@Model.CategoryId" asp-route-currency="@Model.Currency" asp-route-isTaxDeductible="@Model.IsTaxDeductible" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No expenses found</h4>
+            <p class="text-muted">You haven't added any expenses yet or no expenses match your search criteria.</p>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Your First Expense
+            </a>
+        </div>
+    </div>
+}

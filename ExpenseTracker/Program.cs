@@ -78,7 +78,62 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ExpenseTrackerContext>();
-    context.Database.EnsureCreated();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        logger.LogInformation("Ensuring database is created...");
+        context.Database.EnsureCreated();
+        logger.LogInformation("Database created successfully.");
+        
+        // Create a test user for development
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var testUser = userManager.FindByEmailAsync("test@example.com").Result;
+        
+        if (testUser == null)
+        {
+            logger.LogInformation("Creating test user...");
+            testUser = new User
+            {
+                UserName = "testuser",
+                Email = "test@example.com",
+                FullName = "Test User",
+                EmailConfirmed = true
+            };
+            
+            var result = userManager.CreateAsync(testUser, "Test123!").Result;
+            if (result.Succeeded)
+            {
+                logger.LogInformation("Test user created successfully.");
+                
+                // Create user settings
+                var userSettings = new UserSettings
+                {
+                    UserId = testUser.Id,
+                    DefaultCurrency = "USD",
+                    Theme = "Light"
+                };
+                context.UserSettings.Add(userSettings);
+                context.SaveChanges();
+                
+                logger.LogInformation("User settings created for test user.");
+                
+                // Add sample expenses for testing
+                logger.LogInformation("Adding sample expenses for testing...");
+                await TestExpenses.AddSampleExpenses(context, userManager);
+                logger.LogInformation("Sample expenses added successfully.");
+            }
+            else
+            {
+                logger.LogError("Failed to create test user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while setting up the database.");
+        throw;
+    }
 }
 
 app.Run();

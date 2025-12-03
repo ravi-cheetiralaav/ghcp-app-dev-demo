@@ -1,0 +1,135 @@
+@model ExpenseTracker.ViewModels.ExpenseViewModel
+@{
+    ViewData["Title"] = "Delete Expense";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-trash me-2 text-danger"></i>Delete Expense</h2>
+        <p class="text-muted">Are you sure you want to delete this expense? This action cannot be undone.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-list me-2"></i>Back to Expenses
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Warning!</strong> This expense will be permanently deleted and cannot be recovered.
+        </div>
+        
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Expense to be Deleted</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">@Model.Description</p>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Amount</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">
+                            <strong class="text-success fs-5">@Model.Amount.ToString("C") @Model.Currency</strong>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Category</label>
+                        <p class="form-control-plaintext">
+                            @if (Model.Category != null)
+                            {
+                                <span class="badge @Model.Category.ColorClass fs-6">
+                                    <i class="@Model.Category.IconClass me-2"></i>@Model.Category.Name
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary fs-6">
+                                    <i class="fas fa-question me-2"></i>Uncategorized
+                                </span>
+                            }
+                        </p>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Date</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">
+                            <i class="fas fa-calendar me-2"></i>@Model.ExpenseDate.ToString("MMMM dd, yyyy")
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Tax Deductible</label>
+                        <p class="form-control-plaintext">
+                            @if (Model.IsTaxDeductible)
+                            {
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check me-2"></i>Yes
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary fs-6">
+                                    <i class="fas fa-times me-2"></i>No
+                                </span>
+                            }
+                        </p>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Recurring</label>
+                        <p class="form-control-plaintext">
+                            @if (Model.IsRecurring)
+                            {
+                                <span class="badge bg-warning text-dark fs-6">
+                                    <i class="fas fa-redo me-2"></i>Yes - @Model.RecurringFrequency
+                                </span>
+                                @if (Model.RecurringEndDate.HasValue)
+                                {
+                                    <br>
+                                    <small class="text-muted">Ends: @Model.RecurringEndDate.Value.ToString("MMMM dd, yyyy")</small>
+                                }
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary fs-6">
+                                    <i class="fas fa-times me-2"></i>One-time
+                                </span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Confirmation Form -->
+                <hr class="my-4">
+                <form asp-action="Delete" method="post" class="d-inline">
+                    <input asp-for="Id" type="hidden" />
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info me-md-2">
+                            <i class="fas fa-eye me-2"></i>View Details
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-md-2">
+                            <i class="fas fa-edit me-2"></i>Edit Instead
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you absolutely sure you want to delete this expense? This action cannot be undone.');">
+                            <i class="fas fa-trash me-2"></i>Delete Permanently
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

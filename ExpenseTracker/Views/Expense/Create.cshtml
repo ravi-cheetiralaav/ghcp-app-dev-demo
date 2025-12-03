@@ -1,0 +1,146 @@
+@model ExpenseTracker.ViewModels.ExpenseViewModel
+@{
+    ViewData["Title"] = "Add New Expense";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-plus-circle me-2"></i>Add New Expense</h2>
+        <p class="text-muted">Track your spending with detailed expense records.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-list me-2"></i>Back to Expenses
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Expense Details</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" class="needs-validation" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <input asp-for="Description" class="form-control" placeholder="Enter expense description..." />
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Amount" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                                <input asp-for="Amount" class="form-control" step="0.01" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Currency" class="form-label"></label>
+                            <select asp-for="Currency" asp-items="ViewBag.Currencies" class="form-select">
+                                <option value="">Select Currency</option>
+                            </select>
+                            <span asp-validation-for="Currency" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CategoryId" class="form-label"></label>
+                            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                                <option value="">Select Category</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ExpenseDate" class="form-label"></label>
+                            <input asp-for="ExpenseDate" class="form-control" type="date" />
+                            <span asp-validation-for="ExpenseDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsTaxDeductible" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsTaxDeductible" class="form-check-label">
+                                    Tax Deductible
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsRecurring" class="form-check-input" type="checkbox" id="recurringCheckbox" />
+                                <label asp-for="IsRecurring" class="form-check-label">
+                                    Recurring Expense
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="recurringFields" class="row" style="display: none;">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="RecurringFrequency" class="form-label"></label>
+                            <select asp-for="RecurringFrequency" asp-items="ViewBag.RecurringFrequencies" class="form-select">
+                                <option value="">Select Frequency</option>
+                            </select>
+                            <span asp-validation-for="RecurringFrequency" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="RecurringEndDate" class="form-label"></label>
+                            <input asp-for="RecurringEndDate" class="form-control" type="date" />
+                            <span asp-validation-for="RecurringEndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-secondary me-md-2" onclick="history.back()">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Save Expense
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function () {
+            // Show/hide recurring fields based on checkbox
+            $('#recurringCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#recurringFields').show();
+                } else {
+                    $('#recurringFields').hide();
+                    // Clear values when hiding
+                    $('#RecurringFrequency').val('');
+                    $('#RecurringEndDate').val('');
+                }
+            });
+
+            // Initialize the state on page load
+            if ($('#recurringCheckbox').is(':checked')) {
+                $('#recurringFields').show();
+            }
+        });
+    </script>
+}

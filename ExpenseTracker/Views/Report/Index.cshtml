@@ -1,0 +1,223 @@
+@model ExpenseTracker.ViewModels.ReportViewModel
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-chart-bar text-primary me-2"></i>Reports
+                </h1>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Report Filters -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Report Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="GenerateReport" method="post" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label asp-for="Filter.ReportType" class="form-label"></label>
+                                <select asp-for="Filter.ReportType" class="form-select" id="reportType">
+                                    <option value="Monthly">Monthly Report</option>
+                                    <option value="Annual">Annual Report</option>
+                                    <option value="Custom">Custom Period</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2" id="yearSection">
+                                <label asp-for="Filter.Year" class="form-label"></label>
+                                <select asp-for="Filter.Year" class="form-select">
+                                    @foreach (var year in Model.Filter.AvailableYears)
+                                    {
+                                        <option value="@year" selected="@(year == Model.Filter.Year)">@year</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-2" id="monthSection">
+                                <label asp-for="Filter.Month" class="form-label"></label>
+                                <select asp-for="Filter.Month" class="form-select">
+                                    <option value="">Select Month</option>
+                                    @foreach (var month in Model.Filter.AvailableMonths)
+                                    {
+                                        <option value="@month.Value" selected="@(month.Value == Model.Filter.Month)">@month.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-3" id="financialYearSection">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="form-check">
+                                    <input asp-for="Filter.UseFinancialYear" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Filter.UseFinancialYear" class="form-check-label">
+                                        Use Australian Financial Year (July-June)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="form-check">
+                                    <input asp-for="Filter.ShowAudConversion" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Filter.ShowAudConversion" class="form-check-label">
+                                        <i class="fas fa-dollar-sign me-1"></i>Show amounts in AUD
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3" id="fromDateSection" style="display: none;">
+                                <label asp-for="Filter.FromDate" class="form-label"></label>
+                                <input asp-for="Filter.FromDate" type="date" class="form-control" />
+                            </div>
+
+                            <div class="col-md-3" id="toDateSection" style="display: none;">
+                                <label asp-for="Filter.ToDate" class="form-label"></label>
+                                <input asp-for="Filter.ToDate" type="date" class="form-control" />
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-chart-line me-1"></i>Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Report Results -->
+            @if (Model.MonthlyReport != null || Model.AnnualReport != null || Model.CustomReport != null)
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">@Model.ReportTitle</h5>
+                        <div>
+                            @if (Model.MonthlyReport != null)
+                            {
+                                <a asp-action="DownloadReport" 
+                                   asp-route-reportType="Monthly" 
+                                   asp-route-year="@Model.Filter.Year" 
+                                   asp-route-month="@Model.Filter.Month"
+                                   class="btn btn-light btn-sm">
+                                    <i class="fas fa-download me-1"></i>Download CSV
+                                </a>
+                            }
+                            @if (Model.AnnualReport != null)
+                            {
+                                <a asp-action="DownloadReport" 
+                                   asp-route-reportType="Annual" 
+                                   asp-route-year="@Model.Filter.Year" 
+                                   asp-route-useFinancialYear="@Model.Filter.UseFinancialYear"
+                                   class="btn btn-light btn-sm">
+                                    <i class="fas fa-download me-1"></i>Download CSV
+                                </a>
+                            }
+                            @if (Model.CustomReport != null)
+                            {
+                                <a asp-action="DownloadReport" 
+                                   asp-route-reportType="Custom" 
+                                   asp-route-fromDate="@Model.Filter.FromDate?.ToString("yyyy-MM-dd")" 
+                                   asp-route-toDate="@Model.Filter.ToDate?.ToString("yyyy-MM-dd")"
+                                   class="btn btn-light btn-sm">
+                                    <i class="fas fa-download me-1"></i>Download CSV
+                                </a>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-calendar-alt me-1"></i>Report Period: @Model.DateRange
+                        </p>
+
+                        <!-- Summary Statistics -->
+                        @if (Model.MonthlyReport != null)
+                        {
+                            <partial name="_MonthlyReportPartial" model="Model.MonthlyReport" />
+                        }
+                        @if (Model.AnnualReport != null)
+                        {
+                            <partial name="_AnnualReportPartial" model="Model.AnnualReport" />
+                        }
+                        @if (Model.CustomReport != null)
+                        {
+                            <partial name="_CustomReportPartial" model="Model.CustomReport" />
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reportType = document.getElementById('reportType');
+            const monthSection = document.getElementById('monthSection');
+            const financialYearSection = document.getElementById('financialYearSection');
+            const fromDateSection = document.getElementById('fromDateSection');
+            const toDateSection = document.getElementById('toDateSection');
+            const yearSection = document.getElementById('yearSection');
+
+            function toggleSections() {
+                const selectedType = reportType.value;
+
+                // Hide all sections first
+                monthSection.style.display = 'none';
+                financialYearSection.style.display = 'none';
+                fromDateSection.style.display = 'none';
+                toDateSection.style.display = 'none';
+
+                if (selectedType === 'Monthly') {
+                    monthSection.style.display = 'block';
+                    yearSection.style.display = 'block';
+                } else if (selectedType === 'Annual') {
+                    financialYearSection.style.display = 'block';
+                    yearSection.style.display = 'block';
+                } else if (selectedType === 'Custom') {
+                    fromDateSection.style.display = 'block';
+                    toDateSection.style.display = 'block';
+                    yearSection.style.display = 'none';
+                }
+            }
+
+            // Initial setup
+            toggleSections();
+
+            // Listen for changes
+            reportType.addEventListener('change', toggleSections);
+
+            // Form validation
+            (function() {
+                'use strict';
+                window.addEventListener('load', function() {
+                    var forms = document.getElementsByClassName('needs-validation');
+                    var validation = Array.prototype.filter.call(forms, function(form) {
+                        form.addEventListener('submit', function(event) {
+                            if (form.checkValidity() === false) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
+                            form.classList.add('was-validated');
+                        }, false);
+                    });
+                }, false);
+            })();
+        });
+    </script>
+}

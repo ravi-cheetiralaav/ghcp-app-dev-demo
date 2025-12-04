@@ -1,0 +1,255 @@
+@model ExpenseTracker.Services.MonthlyReportData
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Total Amount</h6>
+                                @if (Model.ShowAudConversion && Model.AudConversionData != null)
+                                {
+                                    <h4>AUD $@($"{Model.AudConversionData.TotalAudAmount:N2}")</h4>
+                                    <small class="opacity-75">@Model.TotalAmount.ToString("C")</small>
+                                }
+                                else
+                                {
+                                    <h4>@Model.TotalAmount.ToString("C")</h4>
+                                }
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-dollar-sign fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Tax Deductible</h6>
+                                <h4>@Model.TaxDeductibleAmount.ToString("C")</h4>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-receipt fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Recurring</h6>
+                                <h4>@Model.RecurringAmount.ToString("C")</h4>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-sync-alt fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Transactions</h6>
+                                <h4>@Model.TotalTransactions</h4>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-list fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.ShowAudConversion && Model.AudConversionData?.CurrencyBreakdown?.Any() == true)
+        {
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Currency Conversion Summary
+                        @if (Model.AudConversionData.LastUpdated.HasValue)
+                        {
+                            <small class="text-muted ms-2">
+                                <i class="fas fa-clock"></i> Updated: @Model.AudConversionData.LastUpdated.Value.ToString("MMM dd, HH:mm")
+                            </small>
+                        }
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var currency in Model.AudConversionData.CurrencyBreakdown)
+                        {
+                            var exchangeRate = Model.AudConversionData.ExchangeRates.ContainsKey(currency.Key) 
+                                ? Model.AudConversionData.ExchangeRates[currency.Key] 
+                                : 1.0m;
+                            var audAmount = currency.Value * exchangeRate;
+                            
+                            <div class="col-md-6 col-lg-3 mb-2">
+                                <div class="d-flex justify-content-between align-items-center border rounded p-2">
+                                    <div>
+                                        <strong>@currency.Key</strong><br>
+                                        <span class="text-muted">$@($"{currency.Value:N2}")</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <i class="fas fa-arrow-right text-primary mx-2"></i>
+                                        <div>
+                                            <span class="fw-bold text-success">AUD $@($"{audAmount:N2}")</span><br>
+                                            <small class="text-muted">Rate: @($"{exchangeRate:F4}")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.CategoryBreakdown.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-tags me-2"></i>Category Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="text-end">
+                                        Amount
+                                        @if (Model.ShowAudConversion && Model.AudConversionData != null)
+                                        {
+                                            <small class="text-muted d-block">Original / AUD</small>
+                                        }
+                                    </th>
+                                    <th class="text-end">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model.CategoryBreakdown.OrderByDescending(c => c.Value))
+                                {
+                                    var percentage = Model.TotalAmount > 0 ? (category.Value / Model.TotalAmount * 100) : 0;
+                                    <tr>
+                                        <td>@category.Key</td>
+                                        <td class="text-end">
+                                            @if (Model.ShowAudConversion && Model.AudConversionData?.CategoryBreakdownAud?.ContainsKey(category.Key) == true)
+                                            {
+                                                <div>
+                                                    <span class="text-muted">@category.Value.ToString("C")</span><br>
+                                                    <strong class="text-success">AUD $@($"{Model.AudConversionData.CategoryBreakdownAud[category.Key]:N2}")</strong>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                @category.Value.ToString("C")
+                                            }
+                                        </td>
+                                        <td class="text-end">@percentage.ToString("F1")%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        @if (Model.CategoryBreakdown.Any())
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Category Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+        }
+
+        @if (Model.CurrencyBreakdown.Count > 1)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-coins me-2"></i>Currency Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    @foreach (var currency in Model.CurrencyBreakdown.OrderByDescending(c => c.Value))
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>@currency.Key</span>
+                            <strong>@currency.Value.ToString("N2")</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (Model.CategoryBreakdown.Any())
+        {
+            <text>
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.CategoryBreakdown.Select(c => "'" + c.Key + "'")))],
+                    datasets: [{
+                        data: [@string.Join(",", Model.CategoryBreakdown.Select(c => c.Value.ToString("F2")))],
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return context.label + ': $' + value.toFixed(2) + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}
